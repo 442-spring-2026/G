@@ -29,7 +29,7 @@ Our mission is to develop a solution that addresses the negative impacts of tech
 - Ensuring user accessibility  
 - Open to iterations  
 
-### Product Manager
+### Project Manager
 - Be organized  
-- Scheduling meetings to check in on everyone  
+- Having reasonable deadlines and timelines 
 - Effectively communicate on specific goals  
