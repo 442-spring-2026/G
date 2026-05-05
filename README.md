@@ -33,3 +33,11 @@ Our mission is to develop a solution that addresses the negative impacts of tech
 - Be organized  
 - Having reasonable deadlines and timelines 
 - Effectively communicate on specific goals  
+
+## Local React App Setup
+1. Install dependencies:
+   - `npm install`
+2. Create `.env` from `.env.example` and fill in Firebase config values.
+3. Start the app:
+   - `npm run dev`
+4. Open `http://localhost:5173/login`.
