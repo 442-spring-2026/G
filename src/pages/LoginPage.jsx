@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { signInWithPopup } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "../firebase";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleGoogleSignIn = async () => {
     setErrorMessage("");
     try {
       await signInWithPopup(auth, googleProvider);
+      navigate("/add");
     } catch (error) {
       console.error("Google sign-in failed:", error);
       setErrorMessage("Google sign-in failed. Please try again.");
@@ -20,6 +23,7 @@ function LoginPage() {
   const handleEmailPasswordSubmit = (event) => {
     event.preventDefault();
     setErrorMessage("");
+    navigate("/add");
   };
 
   return (
