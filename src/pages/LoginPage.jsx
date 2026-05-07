@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
+import { upsertUserProfile } from "../services/firebaseData";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -10,16 +11,31 @@ function LoginPage() {
   const handleGoogleSignIn = async () => {
     setErrorMessage("");
     try {
-      await signInWithPopup(auth, googleProvider);
+      const credential = await signInWithPopup(auth, googleProvider);
+      await upsertUserProfile(credential.user);
     } catch (error) {
       console.error("Google sign-in failed:", error);
       setErrorMessage("Google sign-in failed. Please try again.");
     }
   };
 
-  const handleEmailPasswordSubmit = (event) => {
+  const handleEmailPasswordSubmit = async (event) => {
     event.preventDefault();
     setErrorMessage("");
+
+    try {
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      await upsertUserProfile(credential.user);
+    } catch (error) {
+      console.error("Email/password sign-in failed:", error);
+
+      if (error.code === "auth/invalid-credential") {
+        setErrorMessage("Incorrect email or password.");
+        return;
+      }
+
+      setErrorMessage("Log in failed. Please try again.");
+    }
   };
 
   return (
