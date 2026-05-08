@@ -79,6 +79,7 @@ function getEmailAuthErrorMessage(errorCode, isCreatingAccount) {
 }
 
 function LoginPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -96,7 +97,10 @@ function LoginPage() {
         console.error("Signed in with Google, but user profile save failed:", profileError);
       }
 
-      navigate("/dashboard", { replace: true });
+      navigate("/dashboard", {
+        replace: true,
+        state: { authSuccessMessage: "Signed in with Google successfully." },
+      });
     } catch (error) {
       console.error("Google sign-in failed:", error);
       setErrorMessage(getGoogleAuthErrorMessage(error));
@@ -107,12 +111,42 @@ function LoginPage() {
     event.preventDefault();
     setErrorMessage("");
 
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (isCreatingAccount && !trimmedName) {
+      setErrorMessage("Name is required.");
+      return;
+    }
+
+    if (!trimmedEmail) {
+      setErrorMessage("Email is required.");
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage("Password is required.");
+      return;
+    }
+
     try {
       const credential = isCreatingAccount
-        ? await signUp(email, password)
-        : await signIn(email, password);
-      await upsertUserProfile(credential.user);
-      navigate("/dashboard", { replace: true });
+        ? await signUp(trimmedEmail, password)
+        : await signIn(trimmedEmail, password);
+      await upsertUserProfile(
+        credential.user,
+        isCreatingAccount
+          ? { displayName: trimmedName, name: trimmedName }
+          : undefined
+      );
+      navigate("/dashboard", {
+        replace: true,
+        state: {
+          authSuccessMessage: isCreatingAccount
+            ? "Account created and signed in successfully."
+            : "Logged in successfully.",
+        },
+      });
     } catch (error) {
       console.error("Email/password auth failed:", error);
       setErrorMessage(getEmailAuthErrorMessage(error.code, isCreatingAccount));
@@ -123,11 +157,27 @@ function LoginPage() {
     <main className="auth-page">
       <section className="auth-card" aria-labelledby="login-title">
         <h1 id="login-title">
-          {isCreatingAccount ? "Create account" : "Log in"}
+          {isCreatingAccount ? "Sign Up" : "Log in"}
         </h1>
         <p className="auth-subtitle">Track your medications in one place.</p>
 
-        <form onSubmit={handleEmailPasswordSubmit} className="auth-form">
+        <form onSubmit={handleEmailPasswordSubmit} className="auth-form" noValidate>
+          {isCreatingAccount ? (
+            <>
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Your name"
+                autoComplete="name"
+                required
+              />
+            </>
+          ) : null}
+
           <label htmlFor="email">Email</label>
           <input
             id="email"
@@ -153,7 +203,7 @@ function LoginPage() {
           />
 
           <button type="submit" className="primary-button">
-            {isCreatingAccount ? "Create account" : "Log in"}
+            {isCreatingAccount ? "Sign Up" : "Log in"}
           </button>
         </form>
 
