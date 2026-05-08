@@ -1,21 +1,105 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
-import { upsertUserProfile } from "../services/firebaseData";
+import { upsertUserProfile, signIn, signUp } from "../services/firebaseData";
+import { useNavigate } from "react-router-dom";
+
+function getGoogleAuthErrorMessage(error) {
+  const errorCode = error?.code;
+
+  if (errorCode === "auth/operation-not-allowed") {
+    return "Google sign-in is not enabled in Firebase Authentication yet.";
+  }
+
+  if (errorCode === "auth/unauthorized-domain") {
+    return "This domain is not authorized for Google sign-in in Firebase.";
+  }
+
+  if (errorCode === "auth/popup-blocked") {
+    return "Google sign-in popup was blocked. Allow popups and try again.";
+  }
+
+  if (errorCode === "auth/popup-closed-by-user") {
+    return "Google sign-in was canceled before completion.";
+  }
+
+  if (errorCode === "auth/cancelled-popup-request") {
+    return "A sign-in popup is already open. Complete that popup and try again.";
+  }
+
+  if (errorCode === "auth/invalid-api-key") {
+    return "Firebase API key is invalid. Check VITE_FIREBASE_API_KEY in your .env file.";
+  }
+
+  if (errorCode === "auth/app-not-authorized") {
+    return "This app is not authorized for Firebase Authentication. Check your Firebase project and OAuth setup.";
+  }
+
+  if (errorCode === "auth/configuration-not-found") {
+    return "Google sign-in is not configured in Firebase. Enable Google in Authentication > Sign-in method.";
+  }
+
+  if (errorCode === "auth/network-request-failed") {
+    return "Network error during Google sign-in. Check your connection and try again.";
+  }
+
+  const fallbackMessage =
+    typeof error?.message === "string"
+      ? error.message
+          .replace(/^Firebase:\s*/i, "")
+          .replace(/\s*\(auth\/[a-z-]+\)\.?$/i, "")
+          .trim()
+      : "";
+
+  return fallbackMessage
+    ? `Google sign-in failed: ${fallbackMessage}`
+    : "Google sign-in failed. Please try again.";
+}
+
+function getEmailAuthErrorMessage(errorCode, isCreatingAccount) {
+  if (errorCode === "auth/weak-password") {
+    return "Password must be at least 6 characters.";
+  }
+
+  if (errorCode === "auth/wrong-password") {
+    return "Incorrect password. Please try again.";
+  }
+
+  if (errorCode === "auth/user-not-found" || errorCode === "auth/invalid-email") {
+    return "Incorrect email or password.";
+  }
+
+  if (errorCode === "auth/email-already-in-use") {
+    return "That email already has an account. Log in instead.";
+  }
+
+  return isCreatingAccount
+    ? "Account creation failed. Please try again."
+    : "Log in failed. Please try again.";
+}
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const navigate = useNavigate();
 
   const handleGoogleSignIn = async () => {
     setErrorMessage("");
     try {
       const credential = await signInWithPopup(auth, googleProvider);
-      await upsertUserProfile(credential.user);
+
+      try {
+        await upsertUserProfile(credential.user);
+      } catch (profileError) {
+        console.error("Signed in with Google, but user profile save failed:", profileError);
+      }
+
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       console.error("Google sign-in failed:", error);
-      setErrorMessage("Google sign-in failed. Please try again.");
+      setErrorMessage(getGoogleAuthErrorMessage(error));
     }
   };
 
@@ -24,24 +108,23 @@ function LoginPage() {
     setErrorMessage("");
 
     try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
+      const credential = isCreatingAccount
+        ? await signUp(email, password)
+        : await signIn(email, password);
       await upsertUserProfile(credential.user);
+      navigate("/dashboard", { replace: true });
     } catch (error) {
-      console.error("Email/password sign-in failed:", error);
-
-      if (error.code === "auth/invalid-credential") {
-        setErrorMessage("Incorrect email or password.");
-        return;
-      }
-
-      setErrorMessage("Log in failed. Please try again.");
+      console.error("Email/password auth failed:", error);
+      setErrorMessage(getEmailAuthErrorMessage(error.code, isCreatingAccount));
     }
   };
 
   return (
     <main className="auth-page">
       <section className="auth-card" aria-labelledby="login-title">
-        <h1 id="login-title">Log in</h1>
+        <h1 id="login-title">
+          {isCreatingAccount ? "Create account" : "Log in"}
+        </h1>
         <p className="auth-subtitle">Track your medications in one place.</p>
 
         <form onSubmit={handleEmailPasswordSubmit} className="auth-form">
@@ -70,9 +153,17 @@ function LoginPage() {
           />
 
           <button type="submit" className="primary-button">
-            Log in
+            {isCreatingAccount ? "Create account" : "Log in"}
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={() => setIsCreatingAccount((current) => !current)}
+          className="secondary-button"
+        >
+          {isCreatingAccount ? "Back to log in" : "Create new account"}
+        </button>
 
         <button
           type="button"
