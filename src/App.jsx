@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, Outlet } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import AddMedicinePage from "./pages/AddMedicinePage";
 import Navbar from "./navbar";
+import Home from "./pages/Home";
 
 // Navbar is only on post-login pages (Requirement N1)
 const AuthenticatedLayout = () => {
