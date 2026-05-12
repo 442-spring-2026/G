@@ -6,9 +6,9 @@ import Navbar from "./navbar";
 // Navbar is only on post-login pages (Requirement N1)
 const AuthenticatedLayout = () => {
   return (
-    <div className="pb-20"> 
-      <Outlet /> 
+    <div style={{ paddingTop: '64px' }}>
       <Navbar />
+      <Outlet /> 
     </div>
   );
 };
