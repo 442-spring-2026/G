@@ -21,6 +21,7 @@ function App() {
 
       {/* Pages inside this block WILL have the navbar (Post-Login) */}
       <Route element={<AuthenticatedLayout />}>
+      <Route path="/home" element={<Home />} />
         <Route path="/add" element={<AddMedicinePage />} />
         {/* Requirement N5 */}
         <Route path="/dashboard" element={<div>Medicine Cabinet Page</div>} />

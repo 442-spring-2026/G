@@ -5,7 +5,7 @@ const Navbar = () => {
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-[#4b2e83] text-[#85754d] flex justify-around items-center h-16 shadow-lg border-t border-[#85754d]">
       <NavLink 
-        to="/dashboard" 
+        to="/home" 
         className={({ isActive }) => 
           isActive ? "text-white flex flex-col items-center" : "flex flex-col items-center hover:text-white"
         }
