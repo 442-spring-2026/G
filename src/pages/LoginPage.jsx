@@ -97,7 +97,7 @@ function LoginPage() {
         console.error("Signed in with Google, but user profile save failed:", profileError);
       }
 
-      navigate("/dashboard", {
+      navigate("/addmedicinepage", {
         replace: true,
         state: { authSuccessMessage: "Signed in with Google successfully." },
       });
@@ -139,7 +139,7 @@ function LoginPage() {
           ? { displayName: trimmedName, name: trimmedName }
           : undefined
       );
-      navigate("/dashboard", {
+      navigate("/addmedicinepage", {
         replace: true,
         state: {
           authSuccessMessage: isCreatingAccount
