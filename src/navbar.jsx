@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, PlusCircle, Bell } from 'lucide-react'; 
+import { Home, PlusCircle, Bell } from 'lucide-react';
 
 const Navbar = () => {
   return (
@@ -14,27 +14,25 @@ const Navbar = () => {
         <span className="text-xs">Home</span>
       </NavLink>
 
-      {/* Add Medicine Icon (N3, N6) */}
-      <NavLink 
-        to="/add" 
-        className={({ isActive }) => 
-          isActive ? "text-white flex flex-col items-center" : "flex flex-col items-center hover:text-white"
-        }
-      >
-        <PlusCircle size={24} />
-        <span className="text-xs">Add</span>
-      </NavLink>
-
-      {/* Reminders Icon (N4, N7) */}
-      <NavLink 
-        to="/reminders" 
-        className={({ isActive }) => 
-          isActive ? "text-white flex flex-col items-center" : "flex flex-col items-center hover:text-white"
-        }
-      >
-        <Bell size={24} />
-        <span className="text-xs">Reminders</span>
-      </NavLink>
+      <div className="navbar-links">
+        {[
+          // Home Icon (N2, N5)
+          { to: '/dashboard', icon: <Home size={18} />, label: 'Home' },
+          // Add Medicine Icon (N3, N6)
+          { to: '/add', icon: <PlusCircle size={18} />, label: 'Add' },
+          // Reminders Icon (N4, N7)
+          { to: '/reminders', icon: <Bell size={18} />, label: 'Reminders' },
+        ].map(({ to, icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) => (isActive ? 'navbar-link active' : 'navbar-link')}
+          >
+            {icon}
+            {label}
+          </NavLink>
+        ))}
+      </div>
     </nav>
   );
 };

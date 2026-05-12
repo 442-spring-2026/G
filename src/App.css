@@ -91,3 +91,54 @@ body {
   color: #b91c1c;
   font-weight: 600;
 }
+
+
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #4b2e83;
+  border-bottom: 2px solid #85754d;
+  z-index: 1000;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.navbar-brand {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 8px;
+}
+
+.navbar-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #c4b9e8;
+  background-color: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.navbar-link.active {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(133, 117, 77, 0.6);
+}
