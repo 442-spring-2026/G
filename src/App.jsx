@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, Outlet } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import AddMedicinePage from "./pages/AddMedicinePage";
 import Navbar from "./navbar";
+import Home from "./pages/Home";
 
 // Navbar is only on post-login pages (Requirement N1)
 const AuthenticatedLayout = () => {
@@ -21,6 +22,7 @@ function App() {
 
       {/* Pages inside this block WILL have the navbar (Post-Login) */}
       <Route element={<AuthenticatedLayout />}>
+      <Route path="/home" element={<Home />} />
         <Route path="/add" element={<AddMedicinePage />} />
         {/* Requirement N5 */}
         <Route path="/dashboard" element={<div>Medicine Cabinet Page</div>} />
