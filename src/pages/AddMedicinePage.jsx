@@ -248,7 +248,7 @@ export default function AddMedicinePage() {
   const [reminderTime, setReminderTime] = useState("");
   const [expirationDate, setExpirationDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [imagePreview, setImagePreview] = useState(null); // base64 or null
+  const [imagePreview, setImagePreview] = useState(null); 
 
   // UI state
   const [errors, setErrors] = useState({});
@@ -328,7 +328,7 @@ export default function AddMedicinePage() {
       };
 
       await addDoc(collection(db, "medications"), medicationData);
-      navigate("/cabinet"); // ← adjust route to match your App.jsx
+      navigate("/dashboard");
     } catch (err) {
       console.error("Firestore save error:", err);
       setGlobalError("Failed to save medication. Please try again.");
