@@ -7,7 +7,7 @@ const Navbar = () => {
       <div className="navbar-links">
         {[
           // Home Icon (N2, N5)
-          { to: '/dashboard', icon: <Home size={18} />, label: 'Home' },
+          { to: '/home', icon: <Home size={18} />, label: 'Home' },
           // Add Medicine Icon (N3, N6)
           { to: '/addmedicinepage', icon: <PlusCircle size={18} />, label: 'Add' },
           // Reminders Icon (N4, N7)
