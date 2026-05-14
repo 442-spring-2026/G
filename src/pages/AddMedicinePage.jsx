@@ -11,10 +11,10 @@ const PLACEHOLDER_IMAGE =
 // ─── Inline styles (no external CSS required) ────────────────────────────────
 const styles = {
   page: {
-    minHeight: "100vh",
+    minHeight: "calc(100vh + 96px)",
     background: "linear-gradient(135deg, #f5f3ff 0%, #faf9f0 60%, #f0ece0 100%)",
     fontFamily: "'Georgia', 'Times New Roman', serif",
-    paddingBottom: "60px",
+    paddingBottom: "12px",
   },
   header: {
     background: "linear-gradient(90deg, #4B2E83 0%, #3a2266 100%)",
