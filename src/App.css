@@ -13,6 +13,69 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background: #f3f4f6;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding-bottom: 96px;
+}
+
+.app-navbar {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border-radius: 22px;
+  background: rgba(75, 46, 131, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px rgba(31, 14, 62, 0.28);
+  backdrop-filter: blur(12px);
+  z-index: 50;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.navbar-link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.86);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  transition: transform 160ms ease, background-color 160ms ease, color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.navbar-link:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-link.active {
+  color: #4b2e83;
+  background: #f5efff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-link svg {
+  display: block;
+  flex-shrink: 0;
 }
 
 
