@@ -16,25 +16,31 @@ const styles = {
     fontFamily: "'Georgia', 'Times New Roman', serif",
     paddingBottom: "60px",
   },
+ // Center the title and subtitle in the purple header
   header: {
-    background: "linear-gradient(90deg, #4B2E83 0%, #3a2266 100%)",
-    padding: "28px 32px 24px",
-    boxShadow: "0 4px 24px rgba(75,46,131,0.18)",
-    borderBottom: "4px solid #B7A57A",
-  },
-  headerTitle: {
+  background: "linear-gradient(90deg, #300070 0%, #300070 100%)",
+  padding: "28px 32px 24px",
+  boxShadow: "0 4px 24px rgba(75,46,131,0.18)",
+  borderBottom: "4px solid #B7A57A",
+  textAlign: "center",
+},
+  
+headerTitle: {
     color: "#ffffff",
     fontSize: "2rem",
     fontWeight: "700",
     letterSpacing: "0.02em",
     margin: 0,
   },
-  headerSubtitle: {
-    color: "#B7A57A",
-    fontSize: "0.95rem",
-    marginTop: "6px",
-    fontStyle: "italic",
-    letterSpacing: "0.04em",
+  // Subtitle styling under the main title
+headerSubtitle: {
+  color: "#B7A57A",
+  fontSize: "0.95rem",
+  marginTop: "6px",
+  fontStyle: "italic",
+  letterSpacing: "0.04em",
+  textAlign: "center",
+
   },
   container: {
     maxWidth: "680px",
