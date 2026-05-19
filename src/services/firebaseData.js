@@ -1,4 +1,4 @@
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { db, auth } from "../firebase";
 
@@ -42,24 +42,47 @@ export async function signUp(email, password) {
   return credential;
 }
 
-// --- Mock medicine data helper (for local testing / UI development) ---
-// Returns a medicine object shaped like what the UI expects.
-export function getMockMedicineById(id) {
-  // single hard-coded sample for testing; expand as needed
-  const sample = {
-    id: "mock1",
-    name: "Eliquis",
-    dosage: "1 Tablet (5mg)",
-    reminderTime: "09:00",
-    notes: "Take with food. Avoid grapefruit.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1580281657521-6b9d4a1d6a6b?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&s=1a2b3c4d5e",
-    // summary shown under the title in the design
-    doseSummary: "1 Tablet (5mg)",
-  };
+// --- Medication management (MM5) ---
+// Fetch a medication document by ID from Firestore
+export async function getMedicationById(medicationId) {
+  if (!medicationId) {
+    throw new Error("Medication ID is required.");
+  }
 
-  if (!id) return null;
-  if (id === sample.id) return sample;
-  // fallback: return sample for any id to simplify dev/testing
-  return sample;
+  try {
+    const docRef = doc(db, "medications", medicationId);
+    const snapshot = await getDoc(docRef);
+
+    if (!snapshot.exists()) {
+      throw new Error("Medication not found.");
+    }
+
+    return { id: snapshot.id, ...snapshot.data() };
+  } catch (err) {
+    console.error("Error fetching medication:", err);
+    throw err;
+  }
+}
+
+// Update a medication document in Firestore (MM5)
+// Uses setDoc with merge to create document if it doesn't exist
+export async function updateMedication(medicationId, updates) {
+  if (!medicationId) {
+    throw new Error("Medication ID is required.");
+  }
+
+  try {
+    const docRef = doc(db, "medications", medicationId);
+    await setDoc(
+      docRef,
+      {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.error("Error updating medication:", err);
+    throw err;
+  }
 }
