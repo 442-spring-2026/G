@@ -12,8 +12,10 @@ function App() {
       <Routes>
         {/* Login page has NO navbar (Requirement N1) */}
         <Route path="/login" element={<LoginPage />} />
+
+        {/* Authenticated routes displaying the global Navbar */}
         <Route path="/home" element={<><Navbar /><Home /></>} />
-        <Route path="/dashboard" element={<><Navbar /><SavedCabinet /></>} />
+        <Route path="/dashboard" element={<><Navbar /><Dashboard /></>} />
         <Route path="/addmedicinepage" element={<><Navbar /><AddMedicinePage /></>} />
         <Route path="/manage/:id" element={<><Navbar /><ManageMedication /></>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
