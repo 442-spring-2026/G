@@ -1,4 +1,4 @@
-import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, setDoc, deleteDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { db, auth } from "../firebase";
 
@@ -83,6 +83,21 @@ export async function updateMedication(medicationId, updates) {
     );
   } catch (err) {
     console.error("Error updating medication:", err);
+    throw err;
+  }
+}
+
+// Delete a medication document from Firestore (MM7)
+export async function deleteMedication(medicationId) {
+  if (!medicationId) {
+    throw new Error("Medication ID is required.");
+  }
+
+  try {
+    const docRef = doc(db, "medications", medicationId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.error("Error deleting medication:", err);
     throw err;
   }
 }

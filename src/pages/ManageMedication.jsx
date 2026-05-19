@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
-import { getMedicationById, updateMedication } from "../services/firebaseData";
+import { getMedicationById, updateMedication, deleteMedication } from "../services/firebaseData";
 
 export default function ManageMedication() {
   const { id } = useParams();
@@ -19,6 +19,8 @@ export default function ManageMedication() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     // Fetch existing medication data from Firestore
@@ -51,9 +53,25 @@ export default function ManageMedication() {
   }, [id]);
 
   async function handleDelete() {
-    // Placeholder for delete logic
-    console.log("Delete medication", id);
-    navigate("/dashboard");
+    // Open confirmation UI (MM6)
+    setShowConfirm(true);
+  }
+
+  async function handleConfirmDelete() {
+    setError("");
+    setDeleting(true);
+    try {
+      if (!id) throw new Error("No medication ID to delete.");
+      await deleteMedication(id);
+      // On success, navigate back to cabinet (MM7)
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Error deleting medication:", err);
+      setError(err.message || "Failed to delete medication.");
+    } finally {
+      setDeleting(false);
+      setShowConfirm(false);
+    }
   }
 
   async function handleSave() {
@@ -147,20 +165,46 @@ export default function ManageMedication() {
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee", minHeight: 84 }} />
 
               <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-                <button 
-                  onClick={handleSave} 
-                  disabled={saving}
-                  style={{ flex: 1, background: "#4B2E83", color: "#fff", border: "none", padding: 12, borderRadius: 10, cursor: saving ? "not-allowed" : "pointer", fontWeight: 700, opacity: saving ? 0.6 : 1 }}
-                >
-                  {saving ? "Updating..." : "Update"}
-                </button>
-                <button 
-                  onClick={handleDelete}
-                  disabled={saving}
-                  style={{ flex: 1, background: "#fff", color: "#4B2E83", border: "2px solid #4B2E83", padding: 12, borderRadius: 10, cursor: saving ? "not-allowed" : "pointer", fontWeight: 700, opacity: saving ? 0.6 : 1 }}
-                >
-                  DELETE
-                </button>
+                {!showConfirm ? (
+                  <>
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      style={{ flex: 1, background: "#4B2E83", color: "#fff", border: "none", padding: 12, borderRadius: 10, cursor: saving ? "not-allowed" : "pointer", fontWeight: 700, opacity: saving ? 0.6 : 1 }}
+                    >
+                      {saving ? "Updating..." : "Update"}
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={saving}
+                      style={{ flex: 1, background: "#fff", color: "#4B2E83", border: "2px solid #4B2E83", padding: 12, borderRadius: 10, cursor: saving ? "not-allowed" : "pointer", fontWeight: 700, opacity: saving ? 0.6 : 1 }}
+                    >
+                      DELETE
+                    </button>
+                  </>
+                ) : (
+                  <div style={{ width: "100%" }}>
+                    <div style={{ background: "#fff7ed", border: "1px solid #f5c19e", padding: 10, borderRadius: 8, color: "#9a3412", fontWeight: 700, marginBottom: 8 }}>
+                      Warning: Deleting this medication cannot be undone. Confirm delete?
+                    </div>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button
+                        onClick={handleConfirmDelete}
+                        disabled={deleting || saving}
+                        style={{ flex: 1, background: "#9a1f60", color: "#fff", border: "none", padding: 12, borderRadius: 10, cursor: deleting ? "not-allowed" : "pointer", fontWeight: 700 }}
+                      >
+                        {deleting ? "Deleting..." : "Confirm Delete"}
+                      </button>
+                      <button
+                        onClick={() => setShowConfirm(false)}
+                        disabled={deleting}
+                        style={{ flex: 1, background: "#fff", color: "#4B2E83", border: "2px solid #4B2E83", padding: 12, borderRadius: 10, cursor: deleting ? "not-allowed" : "pointer", fontWeight: 700 }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
