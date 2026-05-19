@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, Outlet } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import Home from "./pages/Home";
-import SavedCabinet from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard";
 import AddMedicinePage from "./pages/AddMedicinePage";
 import ManageMedication from "./pages/ManageMedication";
 import Navbar from "./navbar";
