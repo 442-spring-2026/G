@@ -1,7 +1,20 @@
-import { NavLink } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
+import { signOut } from "firebase/auth";
 import { Bell, FilePenLine, Home, PlusCircle } from 'lucide-react';
+import { auth } from "./firebase";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <nav className="app-navbar" aria-label="Primary">
       <div className="navbar-links">
@@ -26,6 +39,9 @@ const Navbar = () => {
           </NavLink>
         ))}
       </div>
+      <button type="button" className="navbar-logout" onClick={handleLogout}>
+        Log out
+      </button>
     </nav>
   );
 };
