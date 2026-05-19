@@ -116,3 +116,65 @@ body {
   color: #065f46;
   font-weight: 600;
 }
+
+
+
+/* Issue #11: Empty State */
+
+.dashboard-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+  max-width: 420px;
+  margin: 60px auto 0 auto; 
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.empty-icon-wrapper {
+  background-color: #eef2ff;
+  color: #4b2e83;
+  padding: 16px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-empty-state h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.4rem;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.dashboard-empty-state p {
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.dashboard-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #4b2e83; 
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dashboard-add-btn:hover {
+  background: #3a2266; 
+}
