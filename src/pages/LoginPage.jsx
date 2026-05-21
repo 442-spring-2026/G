@@ -167,6 +167,14 @@ function LoginPage() {
             required
           />
 
+          <button
+            type="button"
+            onClick={() => navigate("/forgot-password")}
+            className="auth-link-button"
+          >
+            Forgot Password?
+          </button>
+
           <button type="submit" className="primary-button">Log in</button>
         </form>
 
