@@ -1,5 +1,5 @@
 import { doc, getDoc, serverTimestamp, setDoc, deleteDoc } from "firebase/firestore";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { db, auth } from "../firebase";
 
 export async function upsertUserProfile(user, additionalFields = {}) {
@@ -40,6 +40,16 @@ export async function signUp(email, password) {
 
   const credential = await createUserWithEmailAndPassword(auth, email, password);
   return credential;
+}
+
+export async function requestPasswordReset(email) {
+  if (!email) {
+    const err = new Error("Email is required.");
+    err.code = "auth/missing-email";
+    throw err;
+  }
+
+  await sendPasswordResetEmail(auth, email);
 }
 
 // --- Medication management (MM5) ---
