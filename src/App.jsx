@@ -7,11 +7,10 @@ import SavedCabinet from "./pages/SavedCabinet";
 import AddMedicinePage from "./pages/AddMedicinePage";
 import ManageMedication from "./pages/ManageMedication";
 import Navbar from "./navbar";
-import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <div className="app-shell"
+    <div className="app-shell">
       <Routes>
         {/* Login & Signup pages have NO navbar (Requirement N1) */}
         <Route path="/login" element={<LoginPage />} />
