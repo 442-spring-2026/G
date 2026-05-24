@@ -1,6 +1,6 @@
 import { useNavigate, NavLink } from 'react-router-dom';
 import { signOut } from "firebase/auth";
-import { Bell, Home, PlusCircle, Pill } from 'lucide-react';
+import { Bell, Home, PlusCircle, Info } from 'lucide-react';
 import { auth } from "./firebase";
 
 const Navbar = () => {
@@ -19,14 +19,17 @@ const Navbar = () => {
     <nav className="app-navbar" aria-label="Primary">
       <div className="navbar-links">
         {[
-          // Home Icon (N2, N5)
-          { to: '/home', icon: <Home size={18} />, label: 'Home' },
-          // Add Medicine Icon (N3, N6)
+          // Home Icon now routes straight to the primary Saved Medicine Cabinet (Requirement N2, N5)
+          { to: '/dashboard', icon: <Home size={18} />, label: 'Cabinet' },
+          
+          // Add Medicine Icon (Requirement N3, N6)
           { to: '/addmedicinepage', icon: <PlusCircle size={18} />, label: 'Add' },
-          // Manage Medication/Dashboard page link for testing
-          { to: '/dashboard', icon: <Pill size={18} />, label: 'Cabinet' },
-          // Reminders Icon (N4, N7)
+          
+          // Reminders Icon (Requirement N4, N7)
           { to: '/reminders', icon: <Bell size={18} />, label: 'Reminders' },
+
+          // Info Icon represents your informational About guidelines page
+          { to: '/home', icon: <Info size={18} />, label: 'About' },
         ].map(({ to, icon, label }) => (
           <NavLink
             key={to}

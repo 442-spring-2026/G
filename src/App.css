@@ -300,3 +300,121 @@ body {
   background: #3a2266; 
   transform: translateY(-1px);
 }
+
+/* issue #12: medication card grid & buttons */
+.dashboard-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.dashboard-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-subtitle {
+  color: #6b7280;
+  margin: 4px 0 0 0;
+  font-size: 0.95rem;
+}
+
+.medicine-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr; /* Stack cards vertically on small screens */
+}
+
+/* Responsive adjustment: 2 columns on tablet/desktop views */
+@media (min-width: 640px) {
+  .medicine-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Resets default button styling into a clean card layout */
+.medicine-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  display: flex;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  padding: 0;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.medicine-card:hover,
+.medicine-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(75, 46, 131, 0.12);
+  outline: none;
+  border-color: rgba(75, 46, 131, 0.3);
+}
+
+.card-accent-bar {
+  width: 6px;
+  background-color: #85754d; 
+  flex-shrink: 0;
+}
+
+.card-main-content {
+  flex: 1;
+  padding: 16px;
+}
+
+.medicine-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.medicine-pill-icon {
+  color: #4b2e83;
+  display: flex;
+  align-items: center;
+}
+
+.medicine-title-row h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #1f2937;
+  font-weight: 700;
+  flex: 1;
+}
+
+.medicine-dosage-badge {
+  background: #f3eef8;
+  color: #4b2e83;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.medicine-details-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+.meta-row svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.truncate-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
