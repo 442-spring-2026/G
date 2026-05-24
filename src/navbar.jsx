@@ -1,6 +1,6 @@
 import { useNavigate, NavLink } from 'react-router-dom';
 import { signOut } from "firebase/auth";
-import { Bell, FilePenLine, Home, PlusCircle } from 'lucide-react';
+import { Bell, Home, PlusCircle, Pill } from 'lucide-react';
 import { auth } from "./firebase";
 
 const Navbar = () => {
@@ -23,8 +23,8 @@ const Navbar = () => {
           { to: '/home', icon: <Home size={18} />, label: 'Home' },
           // Add Medicine Icon (N3, N6)
           { to: '/addmedicinepage', icon: <PlusCircle size={18} />, label: 'Add' },
-          // Temporary Manage Medication page link for testing
-          { to: '/manage/mock1', icon: <FilePenLine size={18} />, label: 'Manage' },
+          // Manage Medication/Dashboard page link for testing
+          { to: '/dashboard', icon: <Pill size={18} />, label: 'Cabinet' },
           // Reminders Icon (N4, N7)
           { to: '/reminders', icon: <Bell size={18} />, label: 'Reminders' },
         ].map(({ to, icon, label }) => (
