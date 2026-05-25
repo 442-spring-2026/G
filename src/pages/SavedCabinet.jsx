@@ -110,7 +110,7 @@ export default function SavedCabinet() {
       ) : (
         <div className="medicine-grid">
           {medications.map((med) => (
-            <div key={med.id} className="medicine-card">
+            <button key={med.id} className="medicine-card" onClick={() => navigate(`/manage/${med.id}`)}>
               <div className="card-accent-bar" />
               <div className="card-main-content">
                 <div className="medicine-title-row">
@@ -131,7 +131,7 @@ export default function SavedCabinet() {
                   )}
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
