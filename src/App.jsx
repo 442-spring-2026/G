@@ -17,7 +17,8 @@ function App() {
         {/* Login & Signup pages have NO navbar (Requirement N1) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgotpassword" element={<ForgotPasswordPage />} /> {/* Fixed string to match login navigate */}
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/forgotpassword" element={<Navigate to="/forgot-password" replace />} />
 
         {/* Main pages HAVE navbar */}
         <Route path="/home" element={<><Navbar /><Home /></>} />
