@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import AddMedicinePage from "./pages/AddMedicinePage";
 import ManageMedication from "./pages/ManageMedication";
 import Navbar from "./navbar";
+import SavedCabinet from "./pages/SavedCabinet";
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
         <Route path="/dashboard" element={<><Navbar /><Dashboard /></>} />
         <Route path="/addmedicinepage" element={<><Navbar /><AddMedicinePage /></>} />
         <Route path="/manage/:id" element={<><Navbar /><ManageMedication /></>} />
-        <Route path="/reminders" element={<><Navbar /><Dashboard /></>} />
+        <Route path="/reminders" element={<><Navbar /><SavedCabinet /></>} />
 
         {/* Catch-all fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />

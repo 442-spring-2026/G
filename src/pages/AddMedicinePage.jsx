@@ -312,7 +312,10 @@ export default function AddMedicinePage() {
     setGlobalError("");
     if (!validate()) return;
 
-    const user = auth.currentUser;
+const mockUser = import.meta.env.VITE_USE_MOCK_AUTH === 'true'
+  ? { uid: 'mock-uid-123', email: import.meta.env.VITE_MOCK_EMAIL }
+  : null;
+const user = auth.currentUser ?? mockUser;
     if (!user) {
       setGlobalError("You must be logged in to save medications.");
       return;
