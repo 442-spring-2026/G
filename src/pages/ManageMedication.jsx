@@ -3,6 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { getMedicationById, updateMedication, deleteMedication } from "../services/firebaseData";
 
+const DEFAULT_MEDICATION_ICON =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='48' fill='%23f3eef8'/%3E%3Cpath d='M33 38h30a7 7 0 0 1 7 7v10a13 13 0 0 1-13 13H40a13 13 0 0 1-13-13V45a7 7 0 0 1 6-7z' fill='%234B2E83'/%3E%3Crect x='28' y='34' width='40' height='9' rx='4.5' fill='%23B7A57A'/%3E%3Ccircle cx='48' cy='52' r='10' fill='%23f3eef8'/%3E%3Ccircle cx='48' cy='52' r='5' fill='%234B2E83'/%3E%3C/svg%3E";
+
 export default function ManageMedication() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -13,6 +16,7 @@ export default function ManageMedication() {
   const [reminderTime, setReminderTime] = useState("");
   const [notes, setNotes] = useState("");
   const [imageUrl, setImageUrl] = useState(null);
+  const [imageLoadError, setImageLoadError] = useState(false);
 
   // UI state
   const [loading, setLoading] = useState(true);
@@ -32,13 +36,14 @@ export default function ManageMedication() {
       }
 
       try {
+        setImageLoadError(false);
         const med = await getMedicationById(id);
         if (med) {
           setName(med.name || "");
           setDosage(med.dosage || "");
           setReminderTime(med.reminderTime || "");
           setNotes(med.notes || "");
-          setImageUrl(med.imageUrl || null);
+          setImageUrl(med.imageUrl || med.imagePreview || med.photoUrl || med.photoURL || null);
         }
         setError("");
       } catch (err) {
@@ -51,6 +56,8 @@ export default function ManageMedication() {
 
     loadMedication();
   }, [id]);
+
+  const displayImageUrl = imageLoadError ? null : imageUrl;
 
   async function handleDelete() {
     // Open confirmation UI (MM6)
@@ -139,8 +146,13 @@ export default function ManageMedication() {
         ) : (
           <div style={{ background: "#f3eef8", borderRadius: 14, padding: 16, textAlign: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 72, height: 72, borderRadius: 36, overflow: "hidden", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <img src={imageUrl || "https://via.placeholder.com/72"} alt="med" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ width: 72, height: 72, borderRadius: 36, overflow: "hidden", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <img
+                  src={displayImageUrl || DEFAULT_MEDICATION_ICON}
+                  alt={name ? `${name} medication` : "Medication"}
+                  onError={() => setImageLoadError(true)}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               </div>
 
               <div style={{ flex: 1, textAlign: "left" }}>
