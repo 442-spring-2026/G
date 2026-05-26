@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { auth, db } from "../firebase";
+
 import { Pill, PlusCircle, Clock, FileText } from 'lucide-react';
 
 const Dashboard = () => {
@@ -7,6 +10,18 @@ const Dashboard = () => {
   
   // Start with an empty list to test the empty state message
   const [medications, setMedications] = useState([]);
+    useEffect(() => {
+    async function loadMedications() {
+      const user = auth.currentUser;
+      if (!user) return;
+      const q = query(collection(db, "medications"), where("userId", "==", user.uid));
+      const snapshot = await getDocs(q);
+      const meds = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setMedications(meds);
+    }
+    loadMedications();
+  }, []);
+
 
   // If there are no medications, show the empty state screen
   if (medications.length === 0) {

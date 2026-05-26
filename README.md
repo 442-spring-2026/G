@@ -68,3 +68,7 @@ Our mission is to help users manage their medications safely and consistently. M
 1. Install dependencies:
    ```bash
    npm install
+
+## Quality
+
+

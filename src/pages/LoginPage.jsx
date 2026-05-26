@@ -2,7 +2,7 @@ import { useState } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "../firebase";
-import { upsertUserProfile, signIn } from "../services/firebaseData";
+import { upsertUserProfile, signIn } from "../services/authService";
 
 function getGoogleAuthErrorMessage(error) {
   const errorCode = error?.code;
