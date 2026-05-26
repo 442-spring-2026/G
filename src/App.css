@@ -275,7 +275,7 @@ body {
 }
 
 .dashboard-empty-state p {
-  color: #6b7280;       
+  color: #6b7280;        
   margin: 0 0 24px 0;
   font-size: 0.95rem;
   line-height: 1.5;
@@ -356,6 +356,23 @@ body {
   width: 6px;
   background-color: #85754d; 
   flex-shrink: 0;
+}
+
+.card-image-thumbnail {
+  width: 75px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.medicine-thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .card-main-content {
