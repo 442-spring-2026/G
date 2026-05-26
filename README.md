@@ -71,4 +71,10 @@ Our mission is to help users manage their medications safely and consistently. M
 
 ## Quality
 
+Accessibility
+- We built pages so they are easy to navigate for everyone, including users who rely on screen readers.
+- First, for proper HTML tags on the Cabinet Dashboard, I wrapped my medication cards in native button tags instead of generic div tags. This tells screen readers that the cards are clickable items you can interact with.
+- Second, for descriptive screen reader text, I added custom aria-label tags to each card loop. Instead of just reading out a name, a screen reader will read a full, clear sentence.
+- Third, for hiding visual clutter, I added aria-hidden="true" to layout icons like the clock and note icons so screen readers skip the decorative shapes and stick only to reading the important medication details.
+
 
