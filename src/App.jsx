@@ -91,7 +91,7 @@ function App() {
         <Route path="/reminders" element={<><Navbar /><SavedCabinet /></>} />
 
         {/* Catch-all fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </div>
   );

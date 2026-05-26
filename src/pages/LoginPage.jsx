@@ -95,7 +95,7 @@ function LoginPage() {
         console.error("Signed in with Google, but user profile save failed:", profileError);
       }
 
-      navigate("/addmedicinepage", {
+      navigate("/dashboard", {
         replace: true,
         state: { authSuccessMessage: "Signed in with Google successfully." },
       });
@@ -124,7 +124,8 @@ function LoginPage() {
     try {
       const credential = await signIn(trimmedEmail, password);
       await upsertUserProfile(credential.user);
-      navigate("/addmedicinepage", {
+      
+      navigate("/dashboard", {
         replace: true,
         state: { authSuccessMessage: "Logged in successfully." },
       });
