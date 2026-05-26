@@ -65,14 +65,14 @@ function App() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
             <Bell size={20} color="#4b2e83" />
-            <strong style={{ color: "#4b2e83" }}>Time to take your medication</strong>
+            <strong style={{ color: "#4b2e83" }}>Time to take your medication. Did you take it?</strong>
           </div>
           <p style={{ margin: "0 0 16px" }}><strong>{activeReminder.name}</strong> — {activeReminder.dosage}</p>
           <div style={{ display: "flex", gap: "12px" }}>
             <button className="primary-button" style={{ width: "auto", padding: "10px 24px" }}
-              onClick={() => saveReminderResult("Taken")}>Taken</button>
+              onClick={() => saveReminderResult("Taken")}>Yes</button>
             <button className="secondary-button" style={{ width: "auto", padding: "10px 24px", marginTop: 0 }}
-              onClick={() => saveReminderResult("Missed")}>Missed</button>
+              onClick={() => saveReminderResult("Missed")}>Ignore</button>
           </div>
         </div>
       )}
