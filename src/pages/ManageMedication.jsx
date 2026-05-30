@@ -14,6 +14,7 @@ export default function ManageMedication() {
   const [name, setName] = useState("");
   const [dosage, setDosage] = useState("");
   const [reminderTime, setReminderTime] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
   const [notes, setNotes] = useState("");
   const [imageUrl, setImageUrl] = useState(null);
   const [imageLoadError, setImageLoadError] = useState(false);
@@ -41,9 +42,10 @@ export default function ManageMedication() {
         const med = await getMedicationById(id);
         if (med) {
           setName(med.name || "");
-            setDosage(med.dosage != null ? String(med.dosage) : "");
+          setDosage(med.dosage != null ? String(med.dosage) : "");
           setReminderTime(med.reminderTime || "");
           setNotes(med.notes || "");
+          setExpirationDate(med.expirationDate || "");
           setImageUrl(med.imageUrl || med.imagePreview || med.photoUrl || med.photoURL || null);
         }
         setError("");
@@ -102,12 +104,26 @@ export default function ManageMedication() {
         return;
       }
 
+      // Validate expiration date (if provided) is not in the past
+      if (expirationDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const exp = new Date(expirationDate + "T00:00:00");
+        if (exp < today) {
+          setError("Expiration date cannot be in the past.");
+          setSaving(false);
+          return;
+        }
+      }
+
       // MM5: Update the medication document in Firestore
       // Only include fields with actual values (Firestore rejects undefined)
       const updates = {};
       if (name.trim()) updates.name = name.trim();
       if (dosage.trim()) updates.dosage = dosage.trim();
       if (reminderTime) updates.reminderTime = reminderTime;
+      // Always include expirationDate so clearing it sets field to null in Firestore
+      updates.expirationDate = expirationDate || null;
       if (notes.trim()) updates.notes = notes.trim();
 
       await updateMedication(id, updates);
@@ -189,6 +205,25 @@ export default function ManageMedication() {
 
               <label style={{ display: "block", marginTop: 10, marginBottom: 6, color: "#6b5b8a" }}>Time</label>
               <input type="time" value={reminderTime} onChange={(e) => setReminderTime(e.target.value)} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }} />
+
+              <label style={{ display: "block", marginTop: 10, marginBottom: 6, color: "#6b5b8a" }}>Expiration Date</label>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input
+                  type="date"
+                  value={expirationDate}
+                  onChange={(e) => { setExpirationDate(e.target.value); setError(""); }}
+                  style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }}
+                />
+                <button
+                  onClick={() => setExpirationDate("")}
+                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #eee", background: "#fff", cursor: "pointer" }}
+                >
+                  Remove
+                </button>
+              </div>
+              <div style={{ color: "#6b5b8a", fontSize: 13, marginTop: 6 }}>
+                Clear the date to remove expiration for this medication.
+              </div>
 
               <label style={{ display: "block", marginTop: 10, marginBottom: 6, color: "#6b5b8a" }}>Additional Note</label>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee", minHeight: 84 }} />
