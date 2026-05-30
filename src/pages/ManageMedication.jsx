@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { getMedicationById, updateMedication, deleteMedication } from "../services/firebaseData";
@@ -17,6 +17,7 @@ export default function ManageMedication() {
   const [expirationDate, setExpirationDate] = useState("");
   const [notes, setNotes] = useState("");
   const [imageUrl, setImageUrl] = useState(null);
+  const [originalMed, setOriginalMed] = useState(null);
   const [imageLoadError, setImageLoadError] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -47,6 +48,14 @@ export default function ManageMedication() {
           setNotes(med.notes || "");
           setExpirationDate(med.expirationDate || "");
           setImageUrl(med.imageUrl || med.imagePreview || med.photoUrl || med.photoURL || null);
+          // store a normalized snapshot to detect changes
+          setOriginalMed({
+            name: med.name || "",
+            dosage: med.dosage != null ? String(med.dosage) : "",
+            reminderTime: med.reminderTime || "",
+            notes: med.notes || "",
+            expirationDate: med.expirationDate || "",
+          });
         }
         setError("");
       } catch (err) {
@@ -61,6 +70,19 @@ export default function ManageMedication() {
   }, [id]);
 
   const displayImageUrl = imageLoadError ? null : imageUrl;
+
+  // compute whether any field has been changed from the original
+  const isDirty = useMemo(() => {
+    if (!originalMed) return false; // not loaded yet or no original
+    const norm = (v) => (v == null ? "" : String(v));
+    return (
+      norm(name).trim() !== (originalMed.name || "") ||
+      norm(dosage).trim() !== (originalMed.dosage || "") ||
+      norm(reminderTime) !== (originalMed.reminderTime || "") ||
+      norm(notes).trim() !== (originalMed.notes || "") ||
+      norm(expirationDate) !== (originalMed.expirationDate || "")
+    );
+  }, [name, dosage, reminderTime, notes, expirationDate, originalMed]);
 
   async function handleDelete() {
     // Open confirmation UI (MM6)
@@ -114,6 +136,29 @@ export default function ManageMedication() {
           setSaving(false);
           return;
         }
+      }
+
+      // Prevent no-op updates
+      const normalize = (v) => (v == null ? "" : String(v));
+      const current = {
+        name: normalize(name).trim(),
+        dosage: normalize(dosage).trim(),
+        reminderTime: normalize(reminderTime),
+        notes: normalize(notes).trim(),
+        expirationDate: normalize(expirationDate),
+      };
+      const original = originalMed || {};
+      const noChanges =
+        current.name === (original.name || "") &&
+        current.dosage === (original.dosage || "") &&
+        current.reminderTime === (original.reminderTime || "") &&
+        current.notes === (original.notes || "") &&
+        current.expirationDate === (original.expirationDate || "");
+
+      if (noChanges) {
+        setError("No changes detected.");
+        setSaving(false);
+        return;
       }
 
       // MM5: Update the medication document in Firestore
@@ -233,11 +278,16 @@ export default function ManageMedication() {
                   <>
                     <button
                       onClick={handleSave}
-                      disabled={saving || (dosage.trim() && errors.dosage)}
-                      style={{ flex: 1, background: "#4B2E83", color: "#fff", border: "none", padding: 12, borderRadius: 10, cursor: saving ? "not-allowed" : "pointer", fontWeight: 700, opacity: saving ? 0.6 : 1 }}
+                      disabled={saving || !isDirty || (dosage.trim() && errors.dosage)}
+                      style={{ flex: 1, background: "#4B2E83", color: "#fff", border: "none", padding: 12, borderRadius: 10, cursor: saving || !isDirty ? "not-allowed" : "pointer", fontWeight: 700, opacity: saving || !isDirty ? 0.6 : 1 }}
                     >
                       {saving ? "Updating..." : "Update"}
                     </button>
+                    {!isDirty && (
+                      <div style={{ width: "100%", textAlign: "center", marginTop: 8, color: "#6b7280", fontSize: 13 }}>
+                        No changes detected
+                      </div>
+                    )}
                     <button
                       onClick={handleDelete}
                       disabled={saving}
