@@ -17,6 +17,7 @@ export default function ManageMedication() {
   const [notes, setNotes] = useState("");
   const [imageUrl, setImageUrl] = useState(null);
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // UI state
   const [loading, setLoading] = useState(true);
@@ -40,7 +41,7 @@ export default function ManageMedication() {
         const med = await getMedicationById(id);
         if (med) {
           setName(med.name || "");
-          setDosage(med.dosage || "");
+            setDosage(med.dosage != null ? String(med.dosage) : "");
           setReminderTime(med.reminderTime || "");
           setNotes(med.notes || "");
           setImageUrl(med.imageUrl || med.imagePreview || med.photoUrl || med.photoURL || null);
@@ -88,6 +89,17 @@ export default function ManageMedication() {
     try {
       if (!id) {
         throw new Error("No medication ID to update.");
+      }
+
+      // Validate dosage is numeric (if provided)
+      function isNumeric(val) {
+        return /^\d+(\.\d+)?$/.test(String(val).trim());
+      }
+
+      if (dosage.trim() && !isNumeric(dosage)) {
+        setErrors({ dosage: "Dosage must be a number (mg)." });
+        setSaving(false);
+        return;
       }
 
       // MM5: Update the medication document in Firestore
@@ -167,8 +179,13 @@ export default function ManageMedication() {
               <label style={{ display: "block", marginBottom: 6, color: "#6b5b8a" }}>Name</label>
               <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }} />
 
-              <label style={{ display: "block", marginTop: 10, marginBottom: 6, color: "#6b5b8a" }}>Dose (mg)</label>
-              <input value={dosage} onChange={(e) => setDosage(e.target.value)} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }} />
+              <label style={{ display: "block", marginTop: 10, marginBottom: 6, color: "#6b5b8a" }}>
+                Dose{(dosage && /^\d+(\.\d+)?$/.test(String(dosage).trim())) ? " (mg)" : ""}
+              </label>
+              <input value={dosage} onChange={(e) => { setDosage(e.target.value); setErrors({ ...errors, dosage: undefined }); }} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }} />
+              {errors.dosage && (
+                <div style={{ color: "#c0392b", marginTop: 8, fontWeight: 600 }}>{errors.dosage}</div>
+              )}
 
               <label style={{ display: "block", marginTop: 10, marginBottom: 6, color: "#6b5b8a" }}>Time</label>
               <input type="time" value={reminderTime} onChange={(e) => setReminderTime(e.target.value)} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }} />
@@ -181,7 +198,7 @@ export default function ManageMedication() {
                   <>
                     <button
                       onClick={handleSave}
-                      disabled={saving}
+                      disabled={saving || (dosage.trim() && errors.dosage)}
                       style={{ flex: 1, background: "#4B2E83", color: "#fff", border: "none", padding: 12, borderRadius: 10, cursor: saving ? "not-allowed" : "pointer", fontWeight: 700, opacity: saving ? 0.6 : 1 }}
                     >
                       {saving ? "Updating..." : "Update"}

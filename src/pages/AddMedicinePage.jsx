@@ -296,6 +296,10 @@ export default function AddMedicinePage() {
     if (!dosage.trim()) newErrors.dosage = "Dosage is required.";
     if (!reminderTime) newErrors.reminderTime = "Reminder time is required.";
 
+    // Dosage must be a numeric value (mg)
+    if (dosage.trim() && !/^\d+(\.\d+)?$/.test(dosage.trim())) {
+      newErrors.dosage = "Dosage must be a number (mg).";
+    }
     if (expirationDate) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -466,7 +470,7 @@ const user = auth.currentUser ?? mockUser;
             {/* Dosage */}
             <div style={styles.fieldGroup}>
               <label htmlFor="med-dosage" style={styles.label}>
-                Dosage <span style={styles.required}>*</span>
+                Dosage (mg) <span style={styles.required}>*</span>
               </label>
               <input
                 id="med-dosage"
