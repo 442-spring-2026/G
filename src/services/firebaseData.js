@@ -82,6 +82,16 @@ export async function updateMedication(medicationId, updates) {
   }
 
   try {
+    // Ensure dosage (if provided) is numeric to avoid storing invalid strings
+    function isNumericString(v) {
+      return /^\d+(\.\d+)?$/.test(String(v).trim());
+    }
+
+    if (updates && updates.dosage != null && updates.dosage !== "" && !isNumericString(updates.dosage)) {
+      const err = new Error("Invalid dosage: must be a number (mg).");
+      err.code = "invalid-dosage";
+      throw err;
+    }
     const docRef = doc(db, "medications", medicationId);
     await setDoc(
       docRef,
