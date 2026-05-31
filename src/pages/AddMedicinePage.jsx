@@ -8,6 +8,9 @@ import { db, auth } from "../firebase";
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='16' fill='%234B2E83'/%3E%3Cellipse cx='60' cy='52' rx='22' ry='10' fill='%23B7A57A' opacity='.9'/%3E%3Crect x='38' y='52' width='44' height='28' rx='6' fill='%23B7A57A' opacity='.9'/%3E%3Ccircle cx='60' cy='52' r='8' fill='%234B2E83'/%3E%3Ccircle cx='60' cy='52' r='4' fill='%23B7A57A'/%3E%3C/svg%3E";
 
+// ─── Supported dosage units (Issue #65) ──────────────────────────────────────
+const DOSAGE_UNITS = ["mg", "mcg", "g", "mL", "IU", "tablet(s)", "capsule(s)", "units"];
+
 // ─── Inline styles (no external CSS required) ────────────────────────────────
 const styles = {
   page: {
@@ -16,31 +19,27 @@ const styles = {
     fontFamily: "'Georgia', 'Times New Roman', serif",
     paddingBottom: "12px",
   },
- // Center the title and subtitle in the purple header
   header: {
-  background: "linear-gradient(90deg, #300070 0%, #300070 100%)",
-  padding: "28px 32px 24px",
-  boxShadow: "0 4px 24px rgba(75,46,131,0.18)",
-  borderBottom: "4px solid #B7A57A",
-  textAlign: "center",
-},
-  
-headerTitle: {
+    background: "linear-gradient(90deg, #300070 0%, #300070 100%)",
+    padding: "28px 32px 24px",
+    boxShadow: "0 4px 24px rgba(75,46,131,0.18)",
+    borderBottom: "4px solid #B7A57A",
+    textAlign: "center",
+  },
+  headerTitle: {
     color: "#ffffff",
     fontSize: "2rem",
     fontWeight: "700",
     letterSpacing: "0.02em",
     margin: 0,
   },
-  // Subtitle styling under the main title
-headerSubtitle: {
-  color: "#B7A57A",
-  fontSize: "0.95rem",
-  marginTop: "6px",
-  fontStyle: "italic",
-  letterSpacing: "0.04em",
-  textAlign: "center",
-
+  headerSubtitle: {
+    color: "#B7A57A",
+    fontSize: "0.95rem",
+    marginTop: "6px",
+    fontStyle: "italic",
+    letterSpacing: "0.04em",
+    textAlign: "center",
   },
   container: {
     maxWidth: "680px",
@@ -77,8 +76,6 @@ headerSubtitle: {
     height: "1px",
     background: "linear-gradient(90deg, rgba(75,46,131,0.2), transparent)",
   },
-
-  // Image upload
   imageUploadArea: {
     border: "2px dashed #B7A57A",
     borderRadius: "14px",
@@ -130,8 +127,6 @@ headerSubtitle: {
     fontFamily: "inherit",
     transition: "all 0.15s",
   },
-
-  // Form fields
   fieldGroup: {
     marginBottom: "22px",
   },
@@ -170,6 +165,37 @@ headerSubtitle: {
     borderColor: "#e05050",
     background: "#fff8f8",
   },
+  // Dosage row: number input + unit select side by side
+  dosageRow: {
+    display: "flex",
+    gap: "10px",
+    alignItems: "stretch",
+  },
+  dosageInput: {
+    flex: 1,
+    padding: "11px 14px",
+    border: "1.5px solid #ddd8f0",
+    borderRadius: "10px",
+    fontSize: "0.95rem",
+    color: "#2d1f4a",
+    background: "#faf9ff",
+    fontFamily: "inherit",
+    transition: "border-color 0.2s, box-shadow 0.2s",
+    boxSizing: "border-box",
+    outline: "none",
+  },
+  dosageSelect: {
+    padding: "11px 12px",
+    border: "1.5px solid #ddd8f0",
+    borderRadius: "10px",
+    fontSize: "0.92rem",
+    color: "#2d1f4a",
+    background: "#faf9ff",
+    fontFamily: "inherit",
+    cursor: "pointer",
+    outline: "none",
+    minWidth: "120px",
+  },
   textarea: {
     width: "100%",
     padding: "11px 14px",
@@ -193,8 +219,6 @@ headerSubtitle: {
     alignItems: "center",
     gap: "4px",
   },
-
-  // Save button
   saveBtn: {
     width: "100%",
     padding: "15px",
@@ -218,8 +242,6 @@ headerSubtitle: {
     opacity: 0.6,
     cursor: "not-allowed",
   },
-
-  // Global error
   globalError: {
     background: "#fff0f0",
     border: "1px solid #f5c0c0",
@@ -234,7 +256,6 @@ headerSubtitle: {
   },
 };
 
-// ─── Helper: convert File → base64 data URL ──────────────────────────────────
 function fileToDataURL(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -244,19 +265,17 @@ function fileToDataURL(file) {
   });
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function AddMedicinePage() {
   const navigate = useNavigate();
 
-  // Form state
   const [name, setName] = useState("");
-  const [dosage, setDosage] = useState("");
+  const [dosageAmount, setDosageAmount] = useState("");       // Issue #65: amount
+  const [dosageUnit, setDosageUnit] = useState("mg");         // Issue #65: unit
   const [reminderTime, setReminderTime] = useState("");
   const [expirationDate, setExpirationDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [imagePreview, setImagePreview] = useState(null); 
+  const [imagePreview, setImagePreview] = useState(null);
 
-  // UI state
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -264,12 +283,9 @@ export default function AddMedicinePage() {
 
   const fileInputRef = useRef(null);
 
-  // ── Image selection ────────────────────────────────────────────────────────
   async function handleImageChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Basic validation
     if (!file.type.startsWith("image/")) {
       setGlobalError("Please select a valid image file (JPG, PNG, GIF, etc.).");
       return;
@@ -279,7 +295,6 @@ export default function AddMedicinePage() {
       return;
     }
     setGlobalError("");
-
     try {
       const dataURL = await fileToDataURL(file);
       setImagePreview(dataURL);
@@ -288,38 +303,30 @@ export default function AddMedicinePage() {
     }
   }
 
-  // ── Validation ─────────────────────────────────────────────────────────────
   function validate() {
     const newErrors = {};
-
     if (!name.trim()) newErrors.name = "Medication name is required.";
-    if (!dosage.trim()) newErrors.dosage = "Dosage is required.";
+    if (!dosageAmount.trim()) newErrors.dosage = "Dosage is required.";
     if (!reminderTime) newErrors.reminderTime = "Reminder time is required.";
-
-    // Dosage must be a numeric value (mg)
-    if (dosage.trim() && !/^\d+(\.\d+)?$/.test(dosage.trim())) {
-      newErrors.dosage = "Dosage must be a number (mg).";
-    }
     if (expirationDate) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const exp = new Date(expirationDate + "T00:00:00"); // avoid timezone shift
+      const exp = new Date(expirationDate + "T00:00:00");
       if (exp < today) newErrors.expirationDate = "Date invalid";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
-  // ── Save to Firestore ──────────────────────────────────────────────────────
   async function handleSave() {
     setGlobalError("");
     if (!validate()) return;
 
-const mockUser = import.meta.env.VITE_USE_MOCK_AUTH === 'true'
-  ? { uid: 'mock-uid-123', email: import.meta.env.VITE_MOCK_EMAIL }
-  : null;
-const user = auth.currentUser ?? mockUser;
+    const mockUser =
+      import.meta.env.VITE_USE_MOCK_AUTH === "true"
+        ? { uid: "mock-uid-123", email: import.meta.env.VITE_MOCK_EMAIL }
+        : null;
+    const user = auth.currentUser ?? mockUser;
     if (!user) {
       setGlobalError("You must be logged in to save medications.");
       return;
@@ -330,12 +337,11 @@ const user = auth.currentUser ?? mockUser;
       const medicationData = {
         userId: user.uid,
         name: name.trim(),
-        dosage: dosage.trim(),
+        // Issue #65: store combined string e.g. "500 mg" or "2 tablet(s)"
+        dosage: `${dosageAmount.trim()} ${dosageUnit}`,
         reminderTime,
         expirationDate: expirationDate || null,
         notes: notes.trim() || null,
-        // Sprint 1: store base64 preview directly.
-        // Sprint 2: swap for Firebase Storage URL.
         imagePreview: imagePreview || null,
         createdAt: serverTimestamp(),
       };
@@ -350,7 +356,6 @@ const user = auth.currentUser ?? mockUser;
     }
   }
 
-  // ── Render helpers ─────────────────────────────────────────────────────────
   function InputError({ field }) {
     if (!errors[field]) return null;
     return (
@@ -360,17 +365,14 @@ const user = auth.currentUser ?? mockUser;
     );
   }
 
-  // ── JSX ────────────────────────────────────────────────────────────────────
   return (
     <div style={styles.page}>
-      {/* ── Page Header ── */}
       <div style={styles.header}>
         <h1 style={styles.headerTitle}>💊 Add Medication</h1>
         <p style={styles.headerSubtitle}>MediTrack · Virtual Medication Cabinet</p>
       </div>
 
       <div style={styles.container}>
-        {/* Global error */}
         {globalError && (
           <div style={styles.globalError} role="alert">
             <span>❌</span> {globalError}
@@ -385,12 +387,8 @@ const user = auth.currentUser ?? mockUser;
               Photo
               <div style={styles.sectionLabelLine} />
             </div>
-
             <div
-              style={{
-                ...styles.imageUploadArea,
-                ...(hovering ? styles.imageUploadAreaHover : {}),
-              }}
+              style={{ ...styles.imageUploadArea, ...(hovering ? styles.imageUploadAreaHover : {}) }}
               onMouseEnter={() => setHovering(true)}
               onMouseLeave={() => setHovering(false)}
               onClick={() => !imagePreview && fileInputRef.current?.click()}
@@ -411,10 +409,7 @@ const user = auth.currentUser ?? mockUser;
                   <button
                     type="button"
                     style={styles.changeImageBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
+                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                   >
                     Change image
                   </button>
@@ -430,8 +425,6 @@ const user = auth.currentUser ?? mockUser;
                 </>
               )}
             </div>
-
-            {/* Hidden file input */}
             <input
               ref={fileInputRef}
               type="file"
@@ -457,7 +450,7 @@ const user = auth.currentUser ?? mockUser;
               <input
                 id="med-name"
                 type="text"
-                placeholder="e.g. Ibuprofen 200mg"
+                placeholder="e.g. Ibuprofen"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 style={{ ...styles.input, ...(errors.name ? styles.inputError : {}) }}
@@ -467,21 +460,37 @@ const user = auth.currentUser ?? mockUser;
               <div id="name-error"><InputError field="name" /></div>
             </div>
 
-            {/* Dosage */}
+            {/* Dosage — Issue #65: amount + unit selector */}
             <div style={styles.fieldGroup}>
-              <label htmlFor="med-dosage" style={styles.label}>
-                Dosage (mg) <span style={styles.required}>*</span>
+              <label htmlFor="med-dosage-amount" style={styles.label}>
+                Dosage <span style={styles.required}>*</span>
               </label>
-              <input
-                id="med-dosage"
-                type="text"
-                placeholder="e.g. 1 tablet / 200mg"
-                value={dosage}
-                onChange={(e) => setDosage(e.target.value)}
-                style={{ ...styles.input, ...(errors.dosage ? styles.inputError : {}) }}
-                aria-required="true"
-                aria-describedby={errors.dosage ? "dosage-error" : undefined}
-              />
+              <div style={styles.dosageRow}>
+                <input
+                  id="med-dosage-amount"
+                  type="text"
+                  placeholder="e.g. 500"
+                  value={dosageAmount}
+                  onChange={(e) => setDosageAmount(e.target.value)}
+                  style={{
+                    ...styles.dosageInput,
+                    ...(errors.dosage ? styles.inputError : {}),
+                  }}
+                  aria-required="true"
+                  aria-describedby={errors.dosage ? "dosage-error" : undefined}
+                />
+                <select
+                  id="med-dosage-unit"
+                  value={dosageUnit}
+                  onChange={(e) => setDosageUnit(e.target.value)}
+                  style={styles.dosageSelect}
+                  aria-label="Dosage unit"
+                >
+                  {DOSAGE_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>{unit}</option>
+                  ))}
+                </select>
+              </div>
               <div id="dosage-error"><InputError field="dosage" /></div>
             </div>
           </div>
@@ -492,9 +501,7 @@ const user = auth.currentUser ?? mockUser;
               Schedule
               <div style={styles.sectionLabelLine} />
             </div>
-
             <div style={styles.fieldGroupRow}>
-              {/* Reminder Time */}
               <div>
                 <label htmlFor="reminder-time" style={styles.label}>
                   Reminder Time <span style={styles.required}>*</span>
@@ -510,8 +517,6 @@ const user = auth.currentUser ?? mockUser;
                 />
                 <div id="time-error"><InputError field="reminderTime" /></div>
               </div>
-
-              {/* Expiration Date */}
               <div>
                 <label htmlFor="exp-date" style={styles.label}>
                   Expiration Date
@@ -536,8 +541,7 @@ const user = auth.currentUser ?? mockUser;
               <div style={styles.sectionLabelLine} />
             </div>
             <label htmlFor="med-notes" style={styles.label}>
-              Notes{" "}
-              <span style={{ color: "#8a7a6a", fontWeight: 400 }}>(optional)</span>
+              Notes <span style={{ color: "#8a7a6a", fontWeight: 400 }}>(optional)</span>
             </label>
             <textarea
               id="med-notes"
@@ -554,39 +558,25 @@ const user = auth.currentUser ?? mockUser;
               type="button"
               onClick={handleSave}
               disabled={saving}
-              style={{
-                ...styles.saveBtn,
-                ...(saving ? styles.saveBtnDisabled : {}),
-              }}
+              style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }}
               aria-busy={saving}
             >
               {saving ? (
                 <>
-                  <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>
-                    ⏳
-                  </span>
+                  <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span>
                   Saving…
                 </>
               ) : (
                 <>💾 Save Medication</>
               )}
             </button>
-
-            <p
-              style={{
-                textAlign: "center",
-                color: "#8a7a6a",
-                fontSize: "0.78rem",
-                marginTop: "14px",
-              }}
-            >
+            <p style={{ textAlign: "center", color: "#8a7a6a", fontSize: "0.78rem", marginTop: "14px" }}>
               Fields marked <span style={styles.required}>*</span> are required
             </p>
           </div>
         </div>
       </div>
 
-      {/* Spinner keyframe */}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         input[type="time"]::-webkit-calendar-picker-indicator,

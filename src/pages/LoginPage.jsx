@@ -56,16 +56,20 @@ function getGoogleAuthErrorMessage(error) {
     : "Google sign-in failed. Please try again.";
 }
 
-function getEmailAuthErrorMessage(errorCode, isCreatingAccount) {
+function getEmailAuthErrorMessage(errorCode) {
   if (errorCode === "auth/weak-password") {
     return "Password must be at least 6 characters.";
   }
 
   if (errorCode === "auth/wrong-password") {
-    return "Incorrect password. Please try again.";
+    return "Incorrect email or password.";
   }
 
-  if (errorCode === "auth/user-not-found" || errorCode === "auth/invalid-email") {
+  if (errorCode === "auth/user-not-found") {
+    return "Incorrect email or password.";
+  }
+
+  if (errorCode === "auth/invalid-credential") {
     return "Incorrect email or password.";
   }
 
@@ -73,9 +77,12 @@ function getEmailAuthErrorMessage(errorCode, isCreatingAccount) {
     return "That email already has an account. Log in instead.";
   }
 
-  return isCreatingAccount
-    ? "Account creation failed. Please try again."
-    : "Log in failed. Please try again.";
+  return "Log in failed. Please try again.";
+}
+
+// Returns true only if the string looks like a valid email address
+function isValidEmailFormat(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function LoginPage() {
@@ -116,6 +123,12 @@ function LoginPage() {
       return;
     }
 
+    // Issue #57: validate format before attempting Firebase login
+    if (!isValidEmailFormat(trimmedEmail)) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
     if (!password) {
       setErrorMessage("Password is required.");
       return;
@@ -131,7 +144,8 @@ function LoginPage() {
       });
     } catch (error) {
       console.error("Email/password auth failed:", error);
-      setErrorMessage(getEmailAuthErrorMessage(error.code, false));
+      // Format was valid but credentials were wrong
+      setErrorMessage(getEmailAuthErrorMessage(error.code));
     }
   };
 
@@ -142,7 +156,6 @@ function LoginPage() {
         <p className="auth-subtitle">Track your medications in one place.</p>
 
         <form onSubmit={handleEmailPasswordSubmit} className="auth-form" noValidate>
-          {/* Name is collected on the dedicated signup page */}
 
           <label htmlFor="email">Email</label>
           <input
