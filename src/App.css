@@ -10,6 +10,10 @@
   box-sizing: border-box;
 }
 
+h1, h2, h3, p, label, input, textarea, button {
+  font-family: inherit;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
