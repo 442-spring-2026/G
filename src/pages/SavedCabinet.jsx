@@ -66,7 +66,7 @@ export default function SavedCabinet() {
   useEffect(() => {
     if (medications.length === 0) return;
     const timers = [];
-    medications.forEach((med) => {
+     medications.forEach((med) => {
       if (!med.reminderTime) return;
       const now = new Date();
       const reminderDate = new Date();
@@ -144,14 +144,14 @@ export default function SavedCabinet() {
             }}
           >
             <Bell size={20} color="#4b2e83" />
-            <h2 style={{ margin: 0, color: "#4b2e83" }}>
+            <h2 style={{ margin: 0, color: "#4b2e83", fontSize: "1.25rem", fontWeight: "700" }}>
               Time to take your medication
             </h2>
           </div>
           <p style={{ margin: "0 0 16px", fontSize: "1.1rem" }}>
             <strong>{activeReminder.name}</strong> — {activeReminder.dosage}
           </p>
-          <div style={{ display: "flex", gap: "12px" }}>
+          <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
             <button
               className="primary-button"
               style={{ width: "auto", padding: "10px 24px" }}
@@ -166,6 +166,18 @@ export default function SavedCabinet() {
             >
               Missed
             </button>
+          </div>
+
+          {/* Enhancement #66: Medical Disclaimer Notice */}
+          <div style={{ 
+            fontSize: "0.78rem", 
+            color: "#6b5b8a", 
+            borderTop: "1px solid #ddd8f0", 
+            paddingTop: "10px", 
+            lineHeight: "1.3",
+            fontStyle: "italic"
+          }}>
+            ⚠️ <strong>Important Note:</strong> Ignoring or missing medication doses can be dangerous to your health. Please consult a qualified medical professional regarding any schedule adjustments or missed doses.
           </div>
         </div>
       )}
