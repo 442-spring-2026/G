@@ -5,6 +5,7 @@ import { auth, db } from "../firebase";
 
 import { Pill, PlusCircle, Clock, FileText } from 'lucide-react';
 import placeholderImg from '../images/placeholder.jpg';
+import { formatDosage } from "../utils/dosage";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ const Dashboard = () => {
               className="medicine-card"
               style={{ textAlign: 'left', width: '100%' }}
               onClick={() => navigate(`/manage/${med.id}`)}
-              aria-label={`Manage ${med.name}, dosage ${med.dosage}. Reminder scheduled at ${med.reminderTime}.`}
+              aria-label={`Manage ${med.name}, dosage ${formatDosage(med.dosage)}. Reminder scheduled at ${med.reminderTime}.`}
             >
               {/* Visual accent*/}
               <div className="card-accent-bar"></div>
@@ -118,7 +119,7 @@ const Dashboard = () => {
                       <Pill size={16} />
                     </span>
                     <h3>{med.name}</h3>
-                    <span className="medicine-dosage-badge">{med.dosage}</span>
+                    <span className="medicine-dosage-badge">{formatDosage(med.dosage)}</span>
                   </div>
                   
                   <div className="medicine-details-meta">

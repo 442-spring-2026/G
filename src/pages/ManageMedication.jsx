@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { getMedicationById, updateMedication, deleteMedication } from "../services/firebaseData";
+import { buildDosage, formatDosage, parseDosage } from "../utils/dosage";
+
+const DOSAGE_UNITS = ["mg", "mcg", "g", "mL", "IU", "tablet(s)", "capsule(s)", "units"];
 
 const DEFAULT_MEDICATION_ICON =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='48' fill='%23f3eef8'/%3E%3Cpath d='M33 38h30a7 7 0 0 1 7 7v10a13 13 0 0 1-13 13H40a13 13 0 0 1-13-13V45a7 7 0 0 1 6-7z' fill='%234B2E83'/%3E%3Crect x='28' y='34' width='40' height='9' rx='4.5' fill='%23B7A57A'/%3E%3Ccircle cx='48' cy='52' r='10' fill='%23f3eef8'/%3E%3Ccircle cx='48' cy='52' r='5' fill='%234B2E83'/%3E%3C/svg%3E";
@@ -12,13 +15,15 @@ export default function ManageMedication() {
 
   // Form fields (MM1-MM4 require these be populated if data exists)
   const [name, setName] = useState("");
-  const [dosage, setDosage] = useState("");
+  const [dosageAmount, setDosageAmount] = useState("");
+  const [dosageUnit, setDosageUnit] = useState("mg");
   const [reminderTime, setReminderTime] = useState("");
   const [expirationDate, setExpirationDate] = useState("");
   const [notes, setNotes] = useState("");
   const [imageUrl, setImageUrl] = useState(null);
   const [imageLoadError, setImageLoadError] = useState(false);
   const [errors, setErrors] = useState({});
+  const [originalMedication, setOriginalMedication] = useState(null);
 
   // UI state
   const [loading, setLoading] = useState(true);
@@ -42,11 +47,20 @@ export default function ManageMedication() {
         const med = await getMedicationById(id);
         if (med) {
           setName(med.name || "");
-          setDosage(med.dosage != null ? String(med.dosage) : "");
+          const parsedDosage = parseDosage(med.dosage);
+          setDosageAmount(parsedDosage.amount);
+          setDosageUnit(DOSAGE_UNITS.includes(parsedDosage.unit) ? parsedDosage.unit : "mg");
           setReminderTime(med.reminderTime || "");
           setNotes(med.notes || "");
           setExpirationDate(med.expirationDate || "");
           setImageUrl(med.imageUrl || med.imagePreview || med.photoUrl || med.photoURL || null);
+          setOriginalMedication({
+            name: med.name || "",
+            dosage: formatDosage(med.dosage),
+            reminderTime: med.reminderTime || "",
+            expirationDate: med.expirationDate || null,
+            notes: med.notes || "",
+          });
         }
         setError("");
       } catch (err) {
@@ -61,6 +75,19 @@ export default function ManageMedication() {
   }, [id]);
 
   const displayImageUrl = imageLoadError ? null : imageUrl;
+  const currentSnapshot = {
+    name: name.trim(),
+    dosage: buildDosage(dosageAmount, dosageUnit),
+    reminderTime,
+    expirationDate: expirationDate || null,
+    notes: notes.trim(),
+  };
+  const isDirty = !originalMedication
+    ? false
+    : Object.keys(currentSnapshot).some(
+        (key) => currentSnapshot[key] !== originalMedication[key]
+      );
+  const dosageError = errors.dosage;
 
   async function handleDelete() {
     // Open confirmation UI (MM6)
@@ -93,13 +120,17 @@ export default function ManageMedication() {
         throw new Error("No medication ID to update.");
       }
 
-      // Validate dosage is numeric (if provided)
-      function isNumeric(val) {
-        return /^\d+(\.\d+)?$/.test(String(val).trim());
+      const dosageAmountTrimmed = dosageAmount.trim();
+      const dosageAmountIsNumeric = /^\d+(\.\d+)?$/.test(dosageAmountTrimmed);
+
+      if (!dosageAmountTrimmed) {
+        setErrors({ dosage: "Dosage amount is required." });
+        setSaving(false);
+        return;
       }
 
-      if (dosage.trim() && !isNumeric(dosage)) {
-        setErrors({ dosage: "Dosage must be a number (mg)." });
+      if (!dosageAmountIsNumeric) {
+        setErrors({ dosage: "Dosage amount must be numeric." });
         setSaving(false);
         return;
       }
@@ -120,11 +151,17 @@ export default function ManageMedication() {
       // Only include fields with actual values (Firestore rejects undefined)
       const updates = {};
       if (name.trim()) updates.name = name.trim();
-      if (dosage.trim()) updates.dosage = dosage.trim();
+      if (dosageAmountTrimmed) updates.dosage = buildDosage(dosageAmountTrimmed, dosageUnit);
       if (reminderTime) updates.reminderTime = reminderTime;
       // Always include expirationDate so clearing it sets field to null in Firestore
       updates.expirationDate = expirationDate || null;
       if (notes.trim()) updates.notes = notes.trim();
+
+      if (!isDirty) {
+        setError("No changes detected.");
+        setSaving(false);
+        return;
+      }
 
       await updateMedication(id, updates);
 
@@ -185,7 +222,7 @@ export default function ManageMedication() {
 
               <div style={{ flex: 1, textAlign: "left" }}>
                 <div style={{ fontWeight: 800, color: "#4B2E83", fontSize: 18 }}>{name || "Medication"}</div>
-                <div style={{ color: "#6b5b8a", marginTop: 6 }}>{dosage}</div>
+                  <div style={{ color: "#6b5b8a", marginTop: 6 }}>{formatDosage(buildDosage(dosageAmount, dosageUnit))}</div>
               </div>
             </div>
 
@@ -196,9 +233,26 @@ export default function ManageMedication() {
               <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }} />
 
               <label style={{ display: "block", marginTop: 10, marginBottom: 6, color: "#6b5b8a" }}>
-                Dose{(dosage && /^\d+(\.\d+)?$/.test(String(dosage).trim())) ? " (mg)" : ""}
+                Dosage
               </label>
-              <input value={dosage} onChange={(e) => { setDosage(e.target.value); setErrors({ ...errors, dosage: undefined }); }} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }} />
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  value={dosageAmount}
+                  onChange={(e) => { setDosageAmount(e.target.value); setErrors({ ...errors, dosage: undefined }); }}
+                  placeholder="500"
+                  style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }}
+                />
+                <select
+                  value={dosageUnit}
+                  onChange={(e) => setDosageUnit(e.target.value)}
+                  style={{ width: 120, padding: 10, borderRadius: 8, border: "1px solid #eee" }}
+                  aria-label="Dosage unit"
+                >
+                  {DOSAGE_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>{unit}</option>
+                  ))}
+                </select>
+              </div>
               {errors.dosage && (
                 <div style={{ color: "#c0392b", marginTop: 8, fontWeight: 600 }}>{errors.dosage}</div>
               )}
@@ -233,7 +287,7 @@ export default function ManageMedication() {
                   <>
                     <button
                       onClick={handleSave}
-                      disabled={saving || (dosage.trim() && errors.dosage)}
+                      disabled={saving || !!dosageError || !isDirty}
                       style={{ flex: 1, background: "#4B2E83", color: "#fff", border: "none", padding: 12, borderRadius: 10, cursor: saving ? "not-allowed" : "pointer", fontWeight: 700, opacity: saving ? 0.6 : 1 }}
                     >
                       {saving ? "Updating..." : "Update"}
@@ -270,6 +324,11 @@ export default function ManageMedication() {
                   </div>
                 )}
               </div>
+              {!isDirty && !saving && !showConfirm && (
+                <div style={{ color: "#6b5b8a", fontSize: 13, marginTop: 10 }}>
+                  Make a change to enable Update.
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { Bell, Clock, Pill, FileText, PlusCircle } from "lucide-react";
 import { auth, db } from "../firebase";
+import { formatDosage } from "../utils/dosage";
 
 export default function SavedCabinet() {
   const navigate = useNavigate();
@@ -149,7 +150,7 @@ export default function SavedCabinet() {
             </h2>
           </div>
           <p style={{ margin: "0 0 16px", fontSize: "1.1rem" }}>
-            <strong>{activeReminder.name}</strong> — {activeReminder.dosage}
+            <strong>{activeReminder.name}</strong> — {formatDosage(activeReminder.dosage)}
           </p>
           <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
             <button
@@ -213,7 +214,7 @@ export default function SavedCabinet() {
                     <Pill size={16} />
                   </span>
                   <h3>{med.name}</h3>
-                  <span className="medicine-dosage-badge">{med.dosage}</span>
+                  <span className="medicine-dosage-badge">{formatDosage(med.dosage)}</span>
                 </div>
                 <div className="medicine-details-meta">
                   <div className="meta-row">

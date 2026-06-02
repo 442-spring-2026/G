@@ -12,6 +12,7 @@ import AddMedicinePage from "./pages/AddMedicinePage";
 import ManageMedication from "./pages/ManageMedication";
 import Navbar from "./navbar";
 import SavedCabinet from "./pages/SavedCabinet";
+import { formatDosage } from "./utils/dosage";
 
 function App() {
   const [activeReminder, setActiveReminder] = useState(null);
@@ -67,7 +68,7 @@ function App() {
             <Bell size={20} color="#4b2e83" />
             <strong style={{ color: "#4b2e83" }}>Time to take your medication. Did you take it?</strong>
           </div>
-          <p style={{ margin: "0 0 16px" }}><strong>{activeReminder.name}</strong> — {activeReminder.dosage}</p>
+          <p style={{ margin: "0 0 16px" }}><strong>{activeReminder.name}</strong> — {formatDosage(activeReminder.dosage)}</p>
           <div style={{ display: "flex", gap: "12px" }}>
             <button className="primary-button" style={{ width: "auto", padding: "10px 24px" }}
               onClick={() => saveReminderResult("Taken")}>Yes</button>
