@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signUp, upsertUserProfile } from "../services/firebaseData";
+import { signUp, upsertUserProfile } from "../services/authService";
 
 function SignupPage() {
   const [name, setName] = useState("");
@@ -33,12 +33,16 @@ function SignupPage() {
 
     try {
       const credential = await signUp(trimmedEmail, password);
-      await upsertUserProfile(credential.user, {
-        displayName: trimmedName,
-        name: trimmedName,
-      });
+      try {
+        await upsertUserProfile(credential.user, {
+          displayName: trimmedName,
+          name: trimmedName,
+        });
+      } catch (profileError) {
+        console.warn("Signed up, but profile save failed:", profileError);
+      }
 
-      navigate("/addmedicinepage", {
+      navigate("/dashboard", {
         replace: true,
         state: { authSuccessMessage: "Account created and signed in successfully." },
       });
@@ -49,6 +53,10 @@ function SignupPage() {
         setErrorMessage("That email already has an account. Log in instead.");
       } else if (code === "auth/weak-password") {
         setErrorMessage("Password must be at least 6 characters.");
+      } else if (code === "auth/invalid-api-key") {
+        setErrorMessage("Firebase is not configured correctly. Check the app configuration.");
+      } else if (code === "auth/configuration-not-found") {
+        setErrorMessage("Firebase Authentication is not enabled for this project.");
       } else {
         setErrorMessage("Account creation failed. Please try again.");
       }
