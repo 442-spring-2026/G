@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, Outlet } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "./firebase";
@@ -78,21 +78,16 @@ function App() {
         </div>
       )}
       <Routes>
-        {/* Login & Signup pages have NO navbar (Requirement N1) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/forgotpassword" element={<Navigate to="/forgot-password" replace />} />
-
-        {/* Main pages HAVE navbar */}
         <Route path="/home" element={<><Navbar /><Home /></>} />
         <Route path="/dashboard" element={<><Navbar /><Dashboard /></>} />
         <Route path="/addmedicinepage" element={<><Navbar /><AddMedicinePage /></>} />
         <Route path="/manage/:id" element={<><Navbar /><ManageMedication /></>} />
         <Route path="/reminders" element={<><Navbar /><SavedCabinet /></>} />
-
-        {/* Catch-all fallback */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>
   );
