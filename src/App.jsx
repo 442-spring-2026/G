@@ -1,18 +1,62 @@
-import { Navigate, Route, Routes, Outlet } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { auth, db } from "./firebase";
+import { Bell } from "lucide-react";
 import LoginPage from "./pages/LoginPage";
-<<<<<<< Updated upstream
+import SignupPage from "./pages/SignupPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import AddMedicinePage from "./pages/AddMedicinePage";
+import ManageMedication from "./pages/ManageMedication";
+import Navbar from "./navbar";
 import SavedCabinet from "./pages/SavedCabinet";
+import { formatDosage } from "./utils/dosage";
 
 function App() {
+  const [activeReminder, setActiveReminder] = useState(null);
+  const [reminderHistory, setReminderHistory] = useState(() => {
+    const saved = localStorage.getItem("reminderHistory");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) return;
+      const q = query(collection(db, "medications"), where("userId", "==", user.uid));
+      const snapshot = await getDocs(q);
+      const meds = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      meds.forEach((med) => {
+        if (!med.reminderTime) return;
+        const now = new Date();
+        const reminderDate = new Date();
+        const [hours, minutes] = med.reminderTime.split(":");
+        reminderDate.setHours(hours, minutes, 0, 0);
+        const delay = reminderDate - now;
+        if (delay > 0) {
+          setTimeout(() => setActiveReminder(med), delay);
+        }
+      });
+    });
+    return () => unsubscribe();
+  }, []);
+
+  function saveReminderResult(status) {
+    if (!activeReminder) return;
+    const newRecord = {
+      medicine: activeReminder.name,
+      time: activeReminder.reminderTime,
+      status,
+      date: new Date().toLocaleString(),
+    };
+    const updated = [newRecord, ...reminderHistory];
+    setReminderHistory(updated);
+    localStorage.setItem("reminderHistory", JSON.stringify(updated));
+    setActiveReminder(null);
+  }
+
   return (
-<<<<<<< HEAD
-    <Routes>
-      {/* Login page has NO navbar (Requirement N1) */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/dashboard" element={<SavedCabinet />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
-=======
     <div className="app-shell">
       {activeReminder && (
         <div style={{
@@ -34,61 +78,19 @@ function App() {
         </div>
       )}
       <Routes>
-        {/* Login & Signup pages have NO navbar (Requirement N1) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/forgotpassword" element={<Navigate to="/forgot-password" replace />} />
-
-        {/* Main pages HAVE navbar */}
         <Route path="/home" element={<><Navbar /><Home /></>} />
         <Route path="/dashboard" element={<><Navbar /><Dashboard /></>} />
         <Route path="/addmedicinepage" element={<><Navbar /><AddMedicinePage /></>} />
         <Route path="/manage/:id" element={<><Navbar /><ManageMedication /></>} />
         <Route path="/reminders" element={<><Navbar /><SavedCabinet /></>} />
-
-        {/* Catch-all fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>
->>>>>>> 75aaacd (fix auth flow and add dashboard)
   );
 }
-=======
-import AddMedicinePage from "./pages/AddMedicinePage";
-import Navbar from "./navbar";
-import Home from "./pages/Home";
 
-
-// Navbar is only on post-login pages (Requirement N1)
-const AuthenticatedLayout = () => {
- return (
-   <div style={{ paddingTop: '64px' }}>
-     <Navbar />
-     <Outlet />
-   </div>
- );
-};
-
-
-function App() {
- return (
-   <Routes>
-     {/* Login page has NO navbar (Requirement N1) */}
-     <Route path="/login" element={<LoginPage />} />
->>>>>>> Stashed changes
-
-
-     {/* Pages inside this block WILL have the navbar (Post-Login) */}
-     <Route element={<AuthenticatedLayout />}>
-     <Route path="/home" element={<Home />} />
-       <Route path="/add" element={<AddMedicinePage />} />
-       {/* Requirement N5 */}
-       <Route path="/dashboard" element={<div>Medicine Cabinet Page</div>} />
-       {/* Requirement N7 */}
-       <Route path="/reminders" element={<div>Reminders Page</div>} />
-     </Route>
-
-
-     <Route path="*" element={<Navigate to="/login" replace />} />
-   </Routes>
+export default App;
