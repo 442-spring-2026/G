@@ -2,7 +2,7 @@ import { useState } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "../firebase";
-import { upsertUserProfile, signIn, signUp } from "../services/firebaseData";
+import { upsertUserProfile, signIn } from "../services/authService";
 
 function getGoogleAuthErrorMessage(error) {
   const errorCode = error?.code;
@@ -56,16 +56,20 @@ function getGoogleAuthErrorMessage(error) {
     : "Google sign-in failed. Please try again.";
 }
 
-function getEmailAuthErrorMessage(errorCode, isCreatingAccount) {
+function getEmailAuthErrorMessage(errorCode) {
   if (errorCode === "auth/weak-password") {
     return "Password must be at least 6 characters.";
   }
 
   if (errorCode === "auth/wrong-password") {
-    return "Incorrect password. Please try again.";
+    return "Incorrect email or password.";
   }
 
-  if (errorCode === "auth/user-not-found" || errorCode === "auth/invalid-email") {
+  if (errorCode === "auth/user-not-found") {
+    return "Incorrect email or password.";
+  }
+
+  if (errorCode === "auth/invalid-credential") {
     return "Incorrect email or password.";
   }
 
@@ -73,17 +77,18 @@ function getEmailAuthErrorMessage(errorCode, isCreatingAccount) {
     return "That email already has an account. Log in instead.";
   }
 
-  return isCreatingAccount
-    ? "Account creation failed. Please try again."
-    : "Log in failed. Please try again.";
+  return "Log in failed. Please try again.";
+}
+
+// Returns true only if the string looks like a valid email address
+function isValidEmailFormat(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function LoginPage() {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const navigate = useNavigate();
 
   const handleGoogleSignIn = async () => {
@@ -111,16 +116,16 @@ function LoginPage() {
     event.preventDefault();
     setErrorMessage("");
 
-    const trimmedName = name.trim();
     const trimmedEmail = email.trim();
-
-    if (isCreatingAccount && !trimmedName) {
-      setErrorMessage("Name is required.");
-      return;
-    }
 
     if (!trimmedEmail) {
       setErrorMessage("Email is required.");
+      return;
+    }
+
+    // Issue #57: validate format before attempting Firebase login
+    if (!isValidEmailFormat(trimmedEmail)) {
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
@@ -130,53 +135,27 @@ function LoginPage() {
     }
 
     try {
-      const credential = isCreatingAccount
-        ? await signUp(trimmedEmail, password)
-        : await signIn(trimmedEmail, password);
-      await upsertUserProfile(
-        credential.user,
-        isCreatingAccount
-          ? { displayName: trimmedName, name: trimmedName }
-          : undefined
-      );
+      const credential = await signIn(trimmedEmail, password);
+      await upsertUserProfile(credential.user);
+      
       navigate("/dashboard", {
         replace: true,
-        state: {
-          authSuccessMessage: isCreatingAccount
-            ? "Account created and signed in successfully."
-            : "Logged in successfully.",
-        },
+        state: { authSuccessMessage: "Logged in successfully." },
       });
     } catch (error) {
       console.error("Email/password auth failed:", error);
-      setErrorMessage(getEmailAuthErrorMessage(error.code, isCreatingAccount));
+      // Format was valid but credentials were wrong
+      setErrorMessage(getEmailAuthErrorMessage(error.code));
     }
   };
 
   return (
     <main className="auth-page">
       <section className="auth-card" aria-labelledby="login-title">
-        <h1 id="login-title">
-          {isCreatingAccount ? "Sign Up" : "Log in"}
-        </h1>
+        <h1 id="login-title">Log in</h1>
         <p className="auth-subtitle">Track your medications in one place.</p>
 
         <form onSubmit={handleEmailPasswordSubmit} className="auth-form" noValidate>
-          {isCreatingAccount ? (
-            <>
-              <label htmlFor="name">Name</label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="Your name"
-                autoComplete="name"
-                required
-              />
-            </>
-          ) : null}
 
           <label htmlFor="email">Email</label>
           <input
@@ -202,17 +181,23 @@ function LoginPage() {
             required
           />
 
-          <button type="submit" className="primary-button">
-            {isCreatingAccount ? "Sign Up" : "Log in"}
+          <button
+            type="button"
+            onClick={() => navigate("/forgot-password")}
+            className="auth-link-button"
+          >
+            Forgot Password?
           </button>
+
+          <button type="submit" className="primary-button">Log in</button>
         </form>
 
         <button
           type="button"
-          onClick={() => setIsCreatingAccount((current) => !current)}
+          onClick={() => navigate("/signup")}
           className="secondary-button"
         >
-          {isCreatingAccount ? "Back to log in" : "Create new account"}
+          Create new account
         </button>
 
         <button
