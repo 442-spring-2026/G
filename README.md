@@ -51,17 +51,19 @@ Our mission is to help users manage their medications safely and consistently. M
 - Teamwork and understanding
 
 **Developer**
-- Writing clean, tested code
-- Collaborating with other developers
+- Writing clean code and comments
+- Test your code
+- Collaborate with other developers
 
 **Product Designer**
 - Using feedback to make designs more user-friendly
-- Ensuring accessibility
+- Ensuring user accessibility
 - Open to iterations
 
 **Project Manager**
-- Organized with reasonable timelines
-- Clear communication on goals
+- Be organized
+- Having reasonable deadlines and timelines
+- Effectively communicate on specific goals
 
 ## Local Setup
 
