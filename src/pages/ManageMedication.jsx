@@ -89,6 +89,17 @@ export default function ManageMedication() {
       );
   const dosageError = errors.dosage;
 
+  function handleDosageAmountChange(event) {
+    const value = event.target.value;
+
+    if (value === "" || /^\d+$/.test(value)) {
+      setDosageAmount(value);
+      if (errors.dosage) {
+        setErrors((current) => ({ ...current, dosage: undefined }));
+      }
+    }
+  }
+
   async function handleDelete() {
     // Open confirmation UI (MM6)
     setShowConfirm(true);
@@ -121,7 +132,7 @@ export default function ManageMedication() {
       }
 
       const dosageAmountTrimmed = dosageAmount.trim();
-      const dosageAmountIsNumeric = /^\d+(\.\d+)?$/.test(dosageAmountTrimmed);
+      const dosageAmountIsNumeric = /^\d+$/.test(dosageAmountTrimmed);
 
       if (!dosageAmountTrimmed) {
         setErrors({ dosage: "Dosage amount is required." });
@@ -130,7 +141,7 @@ export default function ManageMedication() {
       }
 
       if (!dosageAmountIsNumeric) {
-        setErrors({ dosage: "Dosage amount must be numeric." });
+        setErrors({ dosage: "Dosage amount must be a whole number." });
         setSaving(false);
         return;
       }
@@ -238,7 +249,9 @@ export default function ManageMedication() {
               <div style={{ display: "flex", gap: 8 }}>
                 <input
                   value={dosageAmount}
-                  onChange={(e) => { setDosageAmount(e.target.value); setErrors({ ...errors, dosage: undefined }); }}
+                  onChange={handleDosageAmountChange}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="500"
                   style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #eee" }}
                 />

@@ -25,7 +25,14 @@ export function formatDosage(dosage) {
     return "";
   }
 
-  return `${amount} ${unit || DEFAULT_DOSAGE_UNIT}`.trim();
+  const normalizedUnit = String(unit || DEFAULT_DOSAGE_UNIT).trim();
+  const unitParts = normalizedUnit.split(/\s+/);
+  const collapsedUnit =
+    unitParts.length > 1 && unitParts.every((part) => part === unitParts[0])
+      ? unitParts[0]
+      : normalizedUnit;
+
+  return `${amount} ${collapsedUnit || DEFAULT_DOSAGE_UNIT}`.trim();
 }
 
 export function buildDosage(amount, unit = DEFAULT_DOSAGE_UNIT) {

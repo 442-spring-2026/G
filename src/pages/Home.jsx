@@ -6,7 +6,7 @@ const styles = {
   page: {
     minHeight: "100vh",
     background: "linear-gradient(135deg, #f5f3ff 0%, #faf9f0 60%, #f0ece0 100%)",
-    fontFamily: "'Georgia', 'Times New Roman', serif",
+    fontFamily: "inherit",
     paddingBottom: "60px",
   },
   header: {
@@ -92,6 +92,12 @@ const styles = {
   }
 };
 
+const missedDoseGuide = [
+  "Take the missed dose as soon as you remember unless it is almost time for your next scheduled dose.",
+  "Do not take two doses at the same time unless a pharmacist, doctor, or the medication label specifically says to do so.",
+  "If you are unsure what to do, contact your pharmacist or prescribing clinician before taking more medicine.",
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -113,6 +119,18 @@ export default function Home() {
 
       <div style={styles.container}>
         <div style={styles.card}>
+
+          <section style={{ padding: "32px 36px", borderBottom: "1px solid #f0ece0", background: "linear-gradient(135deg, #f8f5ff, #fffaf0)" }}>
+            <h2 style={styles.sectionLabel}>Missed Dose Recovery Guide <span style={styles.sectionLabelLine} /></h2>
+            <p style={{ margin: "0 0 14px", color: "#1f2937" }}>
+              If you miss a dose, use this quick guide before taking anything extra.
+            </p>
+            <ul style={{ margin: 0, paddingLeft: "20px", color: "#1f2937", lineHeight: 1.6 }}>
+              {missedDoseGuide.map((item) => (
+                <li key={item} style={{ marginBottom: "8px" }}>{item}</li>
+              ))}
+            </ul>
+          </section>
 
           <button 
             type="button"

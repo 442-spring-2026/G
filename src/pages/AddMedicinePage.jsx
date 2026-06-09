@@ -16,7 +16,7 @@ const styles = {
   page: {
     minHeight: "calc(100vh + 96px)",
     background: "linear-gradient(135deg, #f5f3ff 0%, #faf9f0 60%, #f0ece0 100%)",
-    fontFamily: "'Georgia', 'Times New Roman', serif",
+    fontFamily: "inherit",
     paddingBottom: "12px",
   },
   header: {
@@ -283,6 +283,17 @@ export default function AddMedicinePage() {
 
   const fileInputRef = useRef(null);
 
+  function handleDosageAmountChange(event) {
+    const value = event.target.value;
+
+    if (value === "" || /^\d+$/.test(value)) {
+      setDosageAmount(value);
+      if (errors.dosage) {
+        setErrors((current) => ({ ...current, dosage: undefined }));
+      }
+    }
+  }
+
   async function handleImageChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -307,6 +318,9 @@ export default function AddMedicinePage() {
     const newErrors = {};
     if (!name.trim()) newErrors.name = "Medication name is required.";
     if (!dosageAmount.trim()) newErrors.dosage = "Dosage is required.";
+    if (dosageAmount.trim() && !/^\d+$/.test(dosageAmount.trim())) {
+      newErrors.dosage = "Dosage must be a whole number.";
+    }
     if (!reminderTime) newErrors.reminderTime = "Reminder time is required.";
     if (expirationDate) {
       const today = new Date();
@@ -469,9 +483,11 @@ export default function AddMedicinePage() {
                 <input
                   id="med-dosage-amount"
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="e.g. 500"
                   value={dosageAmount}
-                  onChange={(e) => setDosageAmount(e.target.value)}
+                  onChange={handleDosageAmountChange}
                   style={{
                     ...styles.dosageInput,
                     ...(errors.dosage ? styles.inputError : {}),
